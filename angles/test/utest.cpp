@@ -181,6 +181,29 @@ TEST(Angles, shortest_angular_distance)
   EXPECT_NEAR(M_PI/2, shortest_angular_distance(9*M_PI/2, M_PI), epsilon);
   EXPECT_NEAR(M_PI/2, shortest_angular_distance(-3*M_PI/2, M_PI), epsilon);
 
+  // There is slight cheat in the following test
+  //    If the the short distance is exactly PI, then both M_PI and -M_PI are both valid results
+  //    Unfortunately EXPECT_NEAR doesn't understand this.  
+  //    To avoid false failures, do not use -M_PI or M_PI as a shortest distance in the tests
+  //
+  // Try 1000 different shortest distances between -M_PI and M_PI
+  for (double shortest_distance=-M_PI+epsilon; shortest_distance<M_PI; shortest_distance += (2*M_PI/20))
+  {
+    // For each shortest_distance create a new distance by adding multiple of 2*PI.
+    for (int i=-10; i<10; i+=1)
+    {
+      double distance = shortest_distance + i*2*M_PI;
+
+      // For each distance generate two angles (to, from).   to = from + distance
+      // Have from start at a bunch of different values
+      for (double from=-3*M_PI; from < 3*M_PI; from += 0.1)
+      {
+        double to = from + distance;
+        EXPECT_NEAR(shortest_distance,  shortest_angular_distance(from, to), epsilon);
+      }
+    }
+  }
+
 }
 
 TEST(Angles, two_pi_complement)
